@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf;
+package com.atypon.wayf.data;
 
 public enum WayfEnvironment {
-    TEST,
+    SANDBOX,
     PRODUCTION
 }

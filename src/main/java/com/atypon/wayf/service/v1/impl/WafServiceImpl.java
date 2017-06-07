@@ -14,27 +14,121 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.service.impl;
+package com.atypon.wayf.service.v1.impl;
 
+import com.atypon.wayf.data.WayfException;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
-import com.atypon.wayf.service.WayfService;
+import com.atypon.wayf.service.HttpRequestExecutor;
+import com.atypon.wayf.service.SerializationHandler;
+import com.atypon.wayf.service.v1.WayfService;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.request.HttpRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WafServiceImpl implements WayfService {
-    @Override
-    public List<IdentityProviderUsage> getDeviceHistory(String localId) {
-        return null;
+    private static final Logger LOG = LoggerFactory.getLogger(WafServiceImpl.class);
+
+    private String baseUrl;
+    private Map<String, String> cachedFullUrls;
+    private SerializationHandler serializationHandler;
+    private String publisherApiToken;
+    private HttpRequestExecutor<HttpRequest> httpRequestExecutor;
+
+    public WafServiceImpl() {
+        this.cachedFullUrls = new HashMap<>();
+    }
+
+    public WafServiceImpl baseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+        return this;
+    }
+
+    public WafServiceImpl cachedFullUrls(Map<String, String> cachedFullUrls) {
+        this.cachedFullUrls = cachedFullUrls;
+        return this;
+    }
+
+    public WafServiceImpl serializationHandler(SerializationHandler serializationHandler) {
+        this.serializationHandler = serializationHandler;
+        return this;
+    }
+
+    public WafServiceImpl publisherApiToken(String publisherApiToken) {
+        this.publisherApiToken = publisherApiToken;
+        return this;
+    }
+
+    public WafServiceImpl httpRequestExecutor(HttpRequestExecutor<HttpRequest> httpRequestExecutor) {
+        this.httpRequestExecutor = httpRequestExecutor;
+        return this;
     }
 
     @Override
-    public IdentityProvider addIdentityProviderUsage(IdentityProvider identityProvider) {
-        return null;
+    public List<IdentityProviderUsage> getDeviceHistory(String localId) throws WayfException {
+        if (localId == null || localId.isEmpty()) {
+            throw new IllegalArgumentException("A non-null and non-empty localId is required to read a device's history");
+        }
+
+        return httpRequestExecutor.execute(
+                Unirest.get(buildUrl(WafServiceImpl.DEVICE_HISTORY_URL))
+                        .header(PUBLISHER_API_TOKEN_HEADER, publisherApiToken)
+                        .routeParam(LOCAL_ID_URL_PARAM, localId),
+                List.class
+        );
     }
 
     @Override
-    public IdentityProvider removeIdentityProviderOption(Long identityProviderId) {
-        return null;
+    public IdentityProvider addIdentityProviderUsage(String localId, IdentityProvider identityProvider) throws WayfException {
+        if (localId == null || localId.isEmpty()) {
+            throw new IllegalArgumentException("A non-null and non-empty localId is required to add an IdentityProvider usage to a device");
+        }
+
+        if (identityProvider == null) {
+            throw new IllegalArgumentException("A non-null IdentityProvider is required to add an IdentityProvider usage to a device");
+        }
+
+        return httpRequestExecutor.execute(
+                Unirest.post(buildUrl(WayfService.ADD_IDENTITY_PROVIDER_USAGE_URL))
+                        .header(PUBLISHER_API_TOKEN_HEADER, publisherApiToken)
+                        .routeParam(LOCAL_ID_URL_PARAM, localId)
+                        .body(serializationHandler.serialize(identityProvider))
+                        .getHttpRequest(),
+                IdentityProvider.class
+        );
+    }
+
+    @Override
+    public void removeIdentityProviderOption(String localId, Long identityProviderId) throws WayfException{
+        if (localId == null || localId.isEmpty()) {
+            throw new IllegalArgumentException("A non-null and non-empty localId is required to remove an IdentityProvider from a device");
+        }
+
+        if (identityProviderId == null) {
+            throw new IllegalArgumentException("A non-null IdentityProvider ID is required to remove an IdentityProvider from a device");
+        }
+
+        httpRequestExecutor.execute(
+                Unirest.delete(buildUrl(WayfService.REMOVE_IDENTITY_PROVIDER_OPTION))
+                        .header(PUBLISHER_API_TOKEN_HEADER, publisherApiToken)
+                        .routeParam(LOCAL_ID_URL_PARAM, localId),
+                Void.class
+        );
+    }
+
+    private String buildUrl(String requestPath) {
+        String fullUrl = cachedFullUrls.get(requestPath);
+
+        if (fullUrl == null) {
+            fullUrl = baseUrl + requestPath;
+            cachedFullUrls.put(requestPath, fullUrl);
+        }
+
+        return fullUrl;
     }
 }

@@ -14,7 +14,22 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data.identity;
+package com.atypon.wayf.data;
 
 public class WayfException extends Exception {
+    private int status;
+
+    public WayfException(int status, String message) {
+        super(message);
+        this.status = status;
+    }
+
+    public WayfException(int status, String message, Throwable t) {
+        super(message, t);
+        this.status = status;
+    }
+
+    public WayfException(String message, Throwable t) {
+        super(message, t);
+    }
 }

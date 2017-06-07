@@ -27,12 +27,12 @@ import com.mashape.unirest.request.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HttpRequestExecutorImpl implements HttpRequestExecutor {
+public class HttpRequestExecutorUnirestImpl implements HttpRequestExecutor<HttpRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(WafServiceImpl.class);
 
     private SerializationHandler serializationHandler;
 
-    public HttpRequestExecutorImpl(SerializationHandler serializationHandler) {
+    public HttpRequestExecutorUnirestImpl(SerializationHandler serializationHandler) {
         this.serializationHandler = serializationHandler;
     }
 

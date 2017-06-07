@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.service.v1;
+package com.atypon.wayf.service;
 
-public class SerializationUtil {
+public interface SerializationHandler {
+    <T> T deserialize(String json, Class<T> returnType);
+    String serialize(Object toSerialize);
 }

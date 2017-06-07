@@ -17,35 +17,32 @@
 package com.atypon.wayf.service.v1;
 
 import com.atypon.wayf.data.WayfEnvironment;
+import com.atypon.wayf.service.SerializationHandler;
+import com.atypon.wayf.service.impl.HttpRequestExecutorUnirestImpl;
+import com.atypon.wayf.service.impl.SerializationHandlerObjectMapperImpl;
+import com.atypon.wayf.service.v1.impl.WafServiceImpl;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class WayConfiguration {
-    private static final String SANDBOX_ENV_URL_PROPERTY = "sandbox.url";
-    private static final String PRODUCTION_ENV_URL_PROPERTY = "production.url";
+public class Wayf {
+    private static final String SANDBOX_URL_PROPERTY = "sandbox.url";
+    private static final String PRODUCTION_URL_PROPERTY = "production.url";
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
 
-    private String apiToken;
-    private WayfEnvironment environment;
+    private static SerializationHandler serializationHandler ;
+    private static Properties properties;
     private static Map<WayfEnvironment, String> environmentToUrlMap;
 
-    public WayConfiguration() {
-    }
-
-    public WayConfiguration apiToken(String apiToken) {
-        this.apiToken = apiToken;
-        return this;
-    }
-
-    public WayConfiguration environment(WayfEnvironment environment) {
-        this.environment = environment;
-        return this;
-    }
-
-    public WayfService service() {
+    public static WayfService service(String apiToken, WayfEnvironment environment) {
         if (apiToken == null || apiToken.isEmpty()) {
             throw new IllegalArgumentException("A non-null and non-empty API token is required to use the WAYF service");
         }
@@ -54,15 +51,35 @@ public class WayConfiguration {
             throw new IllegalArgumentException("An environment must be specified to use the WAYF service");
         }
 
-        if (environmentToUrlMap == null) {
-            initEnvironmentToUrlMap();
+        initEnvironmentToUrlMap();
+        initSerializationHandler();
+
+        String baseUrl = environmentToUrlMap.get(environment);
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            throw new RuntimeException("Could not find WAYF URL for environment [" + environment + "]");
         }
 
-        return new
+        return new WafServiceImpl()
+                .baseUrl(baseUrl)
+                .publisherApiToken(apiToken)
+                .serializationHandler(serializationHandler)
+                .httpRequestExecutor(new HttpRequestExecutorUnirestImpl(serializationHandler));
     }
 
-    private void initEnvironmentToUrlMap() {
-        Properties properties = new Properties();
+    private static void initSerializationHandler() {
+        if (serializationHandler != null) {
+            return;
+        }
+
+       ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setDateFormat(DATE_FORMAT);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        serializationHandler = new SerializationHandlerObjectMapperImpl(objectMapper);
+    }
+
+    private static void initProperties() {
+        properties = new Properties();
 
         InputStream envProperties = Thread.currentThread().getContextClassLoader().getResourceAsStream("wayf-environment.properties");
 
@@ -71,7 +88,31 @@ public class WayConfiguration {
         } catch (Exception e) {
             throw new RuntimeException("Could not read WAYF environment properties");
         }
+    }
 
-        properties.
+    private static void initEnvironmentToUrlMap() {
+        if (environmentToUrlMap != null) {
+            return;
+        }
+
+        if (properties == null) {
+            initProperties();
+        }
+
+        String sandboxUrl = properties.getProperty(SANDBOX_URL_PROPERTY);
+
+        if (sandboxUrl == null || sandboxUrl.isEmpty()) {
+            throw new RuntimeException("Could not determine the sandbox environment's URL");
+        }
+
+        String productionUrl = properties.getProperty(PRODUCTION_URL_PROPERTY);
+
+        if (productionUrl == null || productionUrl.isEmpty()) {
+            throw new RuntimeException("Could not determine the production environment's URL");
+        }
+
+        environmentToUrlMap = new HashMap<>();
+        environmentToUrlMap.put(WayfEnvironment.SANDBOX, sandboxUrl);
+        environmentToUrlMap.put(WayfEnvironment.PRODUCTION, productionUrl);
     }
 }

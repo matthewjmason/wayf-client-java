@@ -14,21 +14,25 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.service;
+package com.atypon.wayf.service.v1;
 
+import com.atypon.wayf.data.WayfException;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
 
 import java.util.List;
 
 public interface WayfService {
+    String PUBLISHER_API_TOKEN_HEADER = "Authorization";
 
-    String DEVICE_HISTORY_URL = "";
-    String ADD_IDENTITY_PROVIDER_USAGE_URL = "";
-    String REMOVE_IDENTITY_PROVIDER_OPTION = "";
+    String LOCAL_ID_URL_PARAM = "localId";
 
-    List<IdentityProviderUsage> getDeviceHistory(String localId);
-    IdentityProvider addIdentityProviderUsage(IdentityProvider identityProvider);
-    IdentityProvider removeIdentityProviderOption(Long identityProviderId);
+    String DEVICE_HISTORY_URL = "/1/device/{localId}/history";
+    String ADD_IDENTITY_PROVIDER_USAGE_URL = "/1/device/{localId}/history/idp";
+    String REMOVE_IDENTITY_PROVIDER_OPTION = "/1/device/{localId}/history/idp/{id}";
+
+    List<IdentityProviderUsage> getDeviceHistory(String localId) throws WayfException;
+    IdentityProvider addIdentityProviderUsage(String localId, IdentityProvider identityProvider) throws WayfException;
+    void removeIdentityProviderOption(String localId, Long identityProviderId) throws WayfException;
 
 }
