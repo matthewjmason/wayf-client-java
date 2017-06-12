@@ -56,7 +56,8 @@ public class HttpRequestExecutorUnirestImpl implements HttpRequestExecutor<HttpR
         if (response.getStatus() > 299) {
             ErrorResponse errorResponse = serializationHandler.deserialize(response.getBody(), ErrorResponse.class);
 
-            throw new WayfException(response.getStatus(), errorResponse.getMessage());
+            String message = errorResponse != null? errorResponse.getMessage() : null;
+            throw new WayfException(response.getStatus(), message);
         }
 
         if (responseClass == null || responseClass == Void.class) {

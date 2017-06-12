@@ -16,20 +16,32 @@
 
 package com.atypon.wayf.service.impl;
 
+import com.atypon.wayf.data.WayfException;
 import com.atypon.wayf.service.SerializationHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SerializationHandlerObjectMapperImpl implements SerializationHandler {
+    private ObjectMapper objectMapper;
+
     public SerializationHandlerObjectMapperImpl(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 
     @Override
-    public <T> T deserialize(String json, Class<T> returnType) {
-        return null;
+    public <T> T deserialize(String json, Class<T> returnType) throws WayfException {
+        try {
+            return objectMapper.readValue(json, returnType);
+        } catch (Exception e) {
+            throw new WayfException("Could not deserialize type", e);
+        }
     }
 
     @Override
-    public String serialize(Object toSerialize) {
-        return null;
+    public String serialize(Object toSerialize) throws WayfException {
+        try {
+            return objectMapper.writeValueAsString(toSerialize);
+        } catch (Exception e) {
+            throw new WayfException("Could not serialize type", e);
+        }
     }
 }

@@ -16,7 +16,9 @@
 
 package com.atypon.wayf.service;
 
+import com.atypon.wayf.data.WayfException;
+
 public interface SerializationHandler {
-    <T> T deserialize(String json, Class<T> returnType);
-    String serialize(Object toSerialize);
+    <T> T deserialize(String json, Class<T> returnType) throws WayfException;
+    String serialize(Object toSerialize) throws WayfException;
 }

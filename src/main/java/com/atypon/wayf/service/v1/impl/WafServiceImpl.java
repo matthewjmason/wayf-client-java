@@ -34,10 +34,13 @@ import java.util.Map;
 public class WafServiceImpl implements WayfService {
     private static final Logger LOG = LoggerFactory.getLogger(WafServiceImpl.class);
 
+    private static final String AUTHORIZATION_HEADER_API_TOKEN_PREFIX = "API ";
+
     private String baseUrl;
     private Map<String, String> cachedFullUrls;
     private SerializationHandler serializationHandler;
     private String publisherApiToken;
+    private String authorizationHeaderValue;
     private HttpRequestExecutor<HttpRequest> httpRequestExecutor;
 
     public WafServiceImpl() {
@@ -61,12 +64,27 @@ public class WafServiceImpl implements WayfService {
 
     public WafServiceImpl publisherApiToken(String publisherApiToken) {
         this.publisherApiToken = publisherApiToken;
+        this.authorizationHeaderValue = buildPublisherTokenAuthorizationValue(publisherApiToken);
         return this;
     }
 
     public WafServiceImpl httpRequestExecutor(HttpRequestExecutor<HttpRequest> httpRequestExecutor) {
         this.httpRequestExecutor = httpRequestExecutor;
         return this;
+    }
+
+    @Override
+    public void registerLocalId(String localId) throws WayfException {
+        if (localId == null || localId.isEmpty()) {
+            throw new IllegalArgumentException("In order to register a local ID, a non-null and non-empty value is required");
+        }
+
+        httpRequestExecutor.execute(
+                Unirest.post(buildUrl(WafServiceImpl.REGISTER_LOCAL_ID_URL))
+                        .header(PUBLISHER_API_TOKEN_HEADER, authorizationHeaderValue)
+                        .routeParam(LOCAL_ID_URL_PARAM, localId),
+                Void.class
+        );
     }
 
     @Override
@@ -77,7 +95,7 @@ public class WafServiceImpl implements WayfService {
 
         return httpRequestExecutor.execute(
                 Unirest.get(buildUrl(WafServiceImpl.DEVICE_HISTORY_URL))
-                        .header(PUBLISHER_API_TOKEN_HEADER, publisherApiToken)
+                        .header(PUBLISHER_API_TOKEN_HEADER, authorizationHeaderValue)
                         .routeParam(LOCAL_ID_URL_PARAM, localId),
                 List.class
         );
@@ -95,7 +113,7 @@ public class WafServiceImpl implements WayfService {
 
         return httpRequestExecutor.execute(
                 Unirest.post(buildUrl(WayfService.ADD_IDENTITY_PROVIDER_USAGE_URL))
-                        .header(PUBLISHER_API_TOKEN_HEADER, publisherApiToken)
+                        .header(PUBLISHER_API_TOKEN_HEADER, authorizationHeaderValue)
                         .routeParam(LOCAL_ID_URL_PARAM, localId)
                         .body(serializationHandler.serialize(identityProvider))
                         .getHttpRequest(),
@@ -115,8 +133,9 @@ public class WafServiceImpl implements WayfService {
 
         httpRequestExecutor.execute(
                 Unirest.delete(buildUrl(WayfService.REMOVE_IDENTITY_PROVIDER_OPTION))
-                        .header(PUBLISHER_API_TOKEN_HEADER, publisherApiToken)
-                        .routeParam(LOCAL_ID_URL_PARAM, localId),
+                        .header(PUBLISHER_API_TOKEN_HEADER, authorizationHeaderValue)
+                        .routeParam(LOCAL_ID_URL_PARAM, localId)
+                        .routeParam(IDP_ID, identityProviderId.toString()),
                 Void.class
         );
     }
@@ -130,5 +149,9 @@ public class WafServiceImpl implements WayfService {
         }
 
         return fullUrl;
+    }
+
+    private String buildPublisherTokenAuthorizationValue(String publisherApiToken) {
+        return AUTHORIZATION_HEADER_API_TOKEN_PREFIX + publisherApiToken;
     }
 }

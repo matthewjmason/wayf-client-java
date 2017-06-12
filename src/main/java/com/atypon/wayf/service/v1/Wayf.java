@@ -36,7 +36,8 @@ import java.util.Properties;
 public class Wayf {
     private static final String SANDBOX_URL_PROPERTY = "sandbox.url";
     private static final String PRODUCTION_URL_PROPERTY = "production.url";
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
 
     private static SerializationHandler serializationHandler ;
     private static Properties properties;
@@ -71,7 +72,7 @@ public class Wayf {
             return;
         }
 
-       ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setDateFormat(DATE_FORMAT);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
