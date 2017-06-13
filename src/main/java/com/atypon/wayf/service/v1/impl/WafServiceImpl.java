@@ -22,6 +22,7 @@ import com.atypon.wayf.data.identity.IdentityProviderUsage;
 import com.atypon.wayf.service.HttpRequestExecutor;
 import com.atypon.wayf.service.SerializationHandler;
 import com.atypon.wayf.service.v1.WayfService;
+import com.atypon.wayf.service.v1.WayfSynchronousService;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.request.HttpRequest;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WafServiceImpl implements WayfService {
+public class WafServiceImpl implements WayfSynchronousService {
     private static final Logger LOG = LoggerFactory.getLogger(WafServiceImpl.class);
 
     private static final String AUTHORIZATION_HEADER_API_TOKEN_PREFIX = "API ";

@@ -22,8 +22,8 @@ import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
 import com.atypon.wayf.data.identity.OauthEntity;
 import com.atypon.wayf.data.identity.OauthProvider;
-import com.atypon.wayf.service.v1.Wayf;
-import com.atypon.wayf.service.v1.WayfService;
+import com.atypon.wayf.service.v1.WayfClient;
+import com.atypon.wayf.service.v1.WayfSynchronousService;
 import org.junit.Test;
 
 import java.util.List;
@@ -39,7 +39,7 @@ public class WayfServiceTest {
     @Test
     public void testClient() throws WayfException{
 
-        WayfService wayf = Wayf.service(API_TOKEN, WayfEnvironment.SANDBOX);
+        WayfSynchronousService wayf = WayfClient.connect().to(WayfEnvironment.SANDBOX).as(API_TOKEN).synchronously();
 
         wayf.registerLocalId("test-local-id-" + UUID.randomUUID().toString());
         List<IdentityProviderUsage> usageHistory = wayf.getDeviceHistory(LOCAL_ID);
@@ -55,6 +55,4 @@ public class WayfServiceTest {
 
         wayf.removeIdentityProviderOption(LOCAL_ID, idp.getId());
     }
-
-
 }

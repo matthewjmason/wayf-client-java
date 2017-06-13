@@ -17,6 +17,7 @@
 package com.atypon.wayf.service.v1;
 
 import com.atypon.wayf.data.WayfEnvironment;
+import com.atypon.wayf.service.HttpRequestExecutor;
 import com.atypon.wayf.service.SerializationHandler;
 import com.atypon.wayf.service.impl.HttpRequestExecutorUnirestImpl;
 import com.atypon.wayf.service.impl.SerializationHandlerObjectMapperImpl;
@@ -33,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class Wayf {
+public class WayfClient {
     private static final String SANDBOX_URL_PROPERTY = "sandbox.url";
     private static final String PRODUCTION_URL_PROPERTY = "production.url";
 
@@ -42,18 +43,36 @@ public class Wayf {
     private static SerializationHandler serializationHandler ;
     private static Properties properties;
     private static Map<WayfEnvironment, String> environmentToUrlMap;
+    private static HttpRequestExecutor httpRequestExecutor;
 
-    public static WayfService service(String apiToken, WayfEnvironment environment) {
-        if (apiToken == null || apiToken.isEmpty()) {
+    private String publisherToken;
+    private WayfEnvironment environment;
+
+    public static WayfClient connect() {
+        initEnvironmentToUrlMap();
+        initSerializationHandler();
+
+        return new WayfClient();
+    }
+
+    public WayfClient to(WayfEnvironment environment) {
+        this.environment = environment;
+        return this;
+    }
+
+    public WayfClient as(String publisherApiToken) {
+        this.publisherToken = publisherApiToken;
+        return this;
+    }
+
+    public WayfSynchronousService synchronously() {
+        if (publisherToken == null || publisherToken.isEmpty()) {
             throw new IllegalArgumentException("A non-null and non-empty API token is required to use the WAYF service");
         }
 
         if (environment == null) {
             throw new IllegalArgumentException("An environment must be specified to use the WAYF service");
         }
-
-        initEnvironmentToUrlMap();
-        initSerializationHandler();
 
         String baseUrl = environmentToUrlMap.get(environment);
         if (baseUrl == null || baseUrl.isEmpty()) {
@@ -62,9 +81,9 @@ public class Wayf {
 
         return new WafServiceImpl()
                 .baseUrl(baseUrl)
-                .publisherApiToken(apiToken)
+                .publisherApiToken(publisherToken)
                 .serializationHandler(serializationHandler)
-                .httpRequestExecutor(new HttpRequestExecutorUnirestImpl(serializationHandler));
+                .httpRequestExecutor(httpRequestExecutor);
     }
 
     private static void initSerializationHandler() {
@@ -77,6 +96,7 @@ public class Wayf {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         serializationHandler = new SerializationHandlerObjectMapperImpl(objectMapper);
+        httpRequestExecutor = new HttpRequestExecutorUnirestImpl(serializationHandler);
     }
 
     private static void initProperties() {

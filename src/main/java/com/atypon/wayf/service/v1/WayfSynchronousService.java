@@ -16,15 +16,15 @@
 
 package com.atypon.wayf.service.v1;
 
-public interface WayfService {
-    String PUBLISHER_API_TOKEN_HEADER = "Authorization";
+import com.atypon.wayf.data.WayfException;
+import com.atypon.wayf.data.identity.IdentityProvider;
+import com.atypon.wayf.data.identity.IdentityProviderUsage;
 
-    String LOCAL_ID_URL_PARAM = "localId";
-    String IDP_ID = "id";
+import java.util.List;
 
-    String REGISTER_LOCAL_ID_URL = "/1/device/{localId}";
-    String DEVICE_HISTORY_URL = "/1/device/{localId}/history";
-    String ADD_IDENTITY_PROVIDER_USAGE_URL = "/1/device/{localId}/history/idp";
-    String REMOVE_IDENTITY_PROVIDER_OPTION = "/1/device/{localId}/history/idp/{id}";
-
+public interface WayfSynchronousService extends  WayfService {
+    void registerLocalId(String localId) throws WayfException;
+    List<IdentityProviderUsage> getDeviceHistory(String localId) throws WayfException;
+    IdentityProvider addIdentityProviderUsage(String localId, IdentityProvider identityProvider) throws WayfException;
+    void removeIdentityProviderOption(String localId, Long identityProviderId) throws WayfException;
 }
