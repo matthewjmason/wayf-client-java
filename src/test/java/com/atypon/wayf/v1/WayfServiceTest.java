@@ -24,6 +24,7 @@ import com.atypon.wayf.data.identity.OauthEntity;
 import com.atypon.wayf.data.identity.OauthProvider;
 import com.atypon.wayf.service.v1.WayfClient;
 import com.atypon.wayf.service.v1.WayfSynchronousService;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -37,6 +38,7 @@ public class WayfServiceTest {
     private static final String LOCAL_ID = "local-id-publisher-a-4a3d8e3a-63d4-426a-b12b-0d75eb7cfad3";
 
     @Test
+    @Ignore
     public void testClient() throws WayfException{
 
         WayfSynchronousService wayf = WayfClient.connect().to(WayfEnvironment.SANDBOX).as(API_TOKEN).synchronously();
