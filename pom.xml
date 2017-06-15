@@ -4,7 +4,7 @@
     <groupId>com.atypon</groupId>
     <artifactId>wayf-client-java</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>WAYF Java Client</name>
     <description>A Java client for interacting with the WAYF cloud.</description>
     <url>https://github.com/Atypon-OpenSource/wayf-client-java</url>
