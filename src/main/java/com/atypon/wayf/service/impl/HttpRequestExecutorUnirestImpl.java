@@ -20,7 +20,7 @@ import com.atypon.wayf.data.ErrorResponse;
 import com.atypon.wayf.data.WayfException;
 import com.atypon.wayf.service.HttpRequestExecutor;
 import com.atypon.wayf.service.SerializationHandler;
-import com.atypon.wayf.service.v1.impl.WafServiceImpl;
+import com.atypon.wayf.service.v1.impl.WayfServiceImpl;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequest;
@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HttpRequestExecutorUnirestImpl implements HttpRequestExecutor<HttpRequest> {
-    private static final Logger LOG = LoggerFactory.getLogger(WafServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WayfServiceImpl.class);
 
     private SerializationHandler serializationHandler;
 

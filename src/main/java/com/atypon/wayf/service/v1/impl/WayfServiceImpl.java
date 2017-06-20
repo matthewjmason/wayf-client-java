@@ -32,10 +32,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WafServiceImpl implements WayfSynchronousService {
-    private static final Logger LOG = LoggerFactory.getLogger(WafServiceImpl.class);
+public class WayfServiceImpl implements WayfSynchronousService {
+    private static final Logger LOG = LoggerFactory.getLogger(WayfServiceImpl.class);
 
-    private static final String AUTHORIZATION_HEADER_API_TOKEN_PREFIX = "API ";
+    private static final String AUTHORIZATION_HEADER_API_TOKEN_PREFIX = "Token ";
 
     private String baseUrl;
     private Map<String, String> cachedFullUrls;
@@ -44,32 +44,32 @@ public class WafServiceImpl implements WayfSynchronousService {
     private String authorizationHeaderValue;
     private HttpRequestExecutor<HttpRequest> httpRequestExecutor;
 
-    public WafServiceImpl() {
+    public WayfServiceImpl() {
         this.cachedFullUrls = new HashMap<>();
     }
 
-    public WafServiceImpl baseUrl(String baseUrl) {
+    public WayfServiceImpl baseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
         return this;
     }
 
-    public WafServiceImpl cachedFullUrls(Map<String, String> cachedFullUrls) {
+    public WayfServiceImpl cachedFullUrls(Map<String, String> cachedFullUrls) {
         this.cachedFullUrls = cachedFullUrls;
         return this;
     }
 
-    public WafServiceImpl serializationHandler(SerializationHandler serializationHandler) {
+    public WayfServiceImpl serializationHandler(SerializationHandler serializationHandler) {
         this.serializationHandler = serializationHandler;
         return this;
     }
 
-    public WafServiceImpl publisherApiToken(String publisherApiToken) {
+    public WayfServiceImpl publisherApiToken(String publisherApiToken) {
         this.publisherApiToken = publisherApiToken;
         this.authorizationHeaderValue = buildPublisherTokenAuthorizationValue(publisherApiToken);
         return this;
     }
 
-    public WafServiceImpl httpRequestExecutor(HttpRequestExecutor<HttpRequest> httpRequestExecutor) {
+    public WayfServiceImpl httpRequestExecutor(HttpRequestExecutor<HttpRequest> httpRequestExecutor) {
         this.httpRequestExecutor = httpRequestExecutor;
         return this;
     }
@@ -81,7 +81,7 @@ public class WafServiceImpl implements WayfSynchronousService {
         }
 
         httpRequestExecutor.execute(
-                Unirest.post(buildUrl(WafServiceImpl.REGISTER_LOCAL_ID_URL))
+                Unirest.post(buildUrl(WayfServiceImpl.REGISTER_LOCAL_ID_URL))
                         .header(PUBLISHER_API_TOKEN_HEADER, authorizationHeaderValue)
                         .routeParam(LOCAL_ID_URL_PARAM, localId),
                 Void.class
@@ -95,7 +95,7 @@ public class WafServiceImpl implements WayfSynchronousService {
         }
 
         return httpRequestExecutor.execute(
-                Unirest.get(buildUrl(WafServiceImpl.DEVICE_HISTORY_URL))
+                Unirest.get(buildUrl(WayfServiceImpl.DEVICE_HISTORY_URL))
                         .header(PUBLISHER_API_TOKEN_HEADER, authorizationHeaderValue)
                         .routeParam(LOCAL_ID_URL_PARAM, localId),
                 List.class

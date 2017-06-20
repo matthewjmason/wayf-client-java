@@ -21,7 +21,7 @@ import com.atypon.wayf.service.HttpRequestExecutor;
 import com.atypon.wayf.service.SerializationHandler;
 import com.atypon.wayf.service.impl.HttpRequestExecutorUnirestImpl;
 import com.atypon.wayf.service.impl.SerializationHandlerObjectMapperImpl;
-import com.atypon.wayf.service.v1.impl.WafServiceImpl;
+import com.atypon.wayf.service.v1.impl.WayfServiceImpl;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -79,7 +79,7 @@ public class WayfClient {
             throw new RuntimeException("Could not find WAYF URL for environment [" + environment + "]");
         }
 
-        return new WafServiceImpl()
+        return new WayfServiceImpl()
                 .baseUrl(baseUrl)
                 .publisherApiToken(publisherToken)
                 .serializationHandler(serializationHandler)
