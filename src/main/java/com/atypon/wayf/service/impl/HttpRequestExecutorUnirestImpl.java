@@ -64,7 +64,17 @@ public class HttpRequestExecutorUnirestImpl implements HttpRequestExecutor<HttpR
             return null;
         }
 
-        return serializationHandler.deserialize(response.getBody(), responseClass);
+        try {
+            return serializationHandler.deserialize(response.getBody(), responseClass);
+        } catch (Exception e) {
+            LOG.error("Could not deserialize response with code [{}], body [{}]", response.getStatus(), response.getBody());
+
+            if (WayfException.class.isAssignableFrom(e.getClass())) {
+                throw (WayfException) e;
+            } else {
+                throw new WayfException("Could not deserialize WAYF response", e);
+            }
+        }
     }
 
 }

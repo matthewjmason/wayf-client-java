@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.service.v1.impl;
 
+import com.atypon.wayf.data.WayfEnvironment;
 import com.atypon.wayf.data.WayfException;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
@@ -28,6 +29,7 @@ import com.mashape.unirest.request.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,10 +82,12 @@ public class WayfServiceImpl implements WayfSynchronousService {
             throw new IllegalArgumentException("In order to register a local ID, a non-null and non-empty value is required");
         }
 
+        String encodedLocalId = urlEncode(localId);
+
         httpRequestExecutor.execute(
                 Unirest.post(buildUrl(WayfServiceImpl.REGISTER_LOCAL_ID_URL))
                         .header(PUBLISHER_API_TOKEN_HEADER, authorizationHeaderValue)
-                        .routeParam(LOCAL_ID_URL_PARAM, localId),
+                        .routeParam(LOCAL_ID_URL_PARAM, encodedLocalId),
                 Void.class
         );
     }
@@ -94,10 +98,12 @@ public class WayfServiceImpl implements WayfSynchronousService {
             throw new IllegalArgumentException("A non-null and non-empty localId is required to read a device's history");
         }
 
+        String encodedLocalId = urlEncode(localId);
+
         return httpRequestExecutor.execute(
                 Unirest.get(buildUrl(WayfServiceImpl.DEVICE_HISTORY_URL))
                         .header(PUBLISHER_API_TOKEN_HEADER, authorizationHeaderValue)
-                        .routeParam(LOCAL_ID_URL_PARAM, localId),
+                        .routeParam(LOCAL_ID_URL_PARAM, encodedLocalId),
                 List.class
         );
     }
@@ -112,10 +118,12 @@ public class WayfServiceImpl implements WayfSynchronousService {
             throw new IllegalArgumentException("A non-null IdentityProvider is required to add an IdentityProvider usage to a device");
         }
 
+        String encodedLocalId = urlEncode(localId);
+
         return httpRequestExecutor.execute(
                 Unirest.post(buildUrl(WayfService.ADD_IDENTITY_PROVIDER_USAGE_URL))
                         .header(PUBLISHER_API_TOKEN_HEADER, authorizationHeaderValue)
-                        .routeParam(LOCAL_ID_URL_PARAM, localId)
+                        .routeParam(LOCAL_ID_URL_PARAM, encodedLocalId)
                         .body(serializationHandler.serialize(identityProvider))
                         .getHttpRequest(),
                 IdentityProvider.class
@@ -132,10 +140,12 @@ public class WayfServiceImpl implements WayfSynchronousService {
             throw new IllegalArgumentException("A non-null IdentityProvider ID is required to remove an IdentityProvider from a device");
         }
 
+        String encodedLocalId = urlEncode(localId);
+
         httpRequestExecutor.execute(
                 Unirest.delete(buildUrl(WayfService.REMOVE_IDENTITY_PROVIDER_OPTION))
                         .header(PUBLISHER_API_TOKEN_HEADER, authorizationHeaderValue)
-                        .routeParam(LOCAL_ID_URL_PARAM, localId)
+                        .routeParam(LOCAL_ID_URL_PARAM, encodedLocalId)
                         .routeParam(IDP_ID, identityProviderId.toString()),
                 Void.class
         );
@@ -154,5 +164,13 @@ public class WayfServiceImpl implements WayfSynchronousService {
 
     private String buildPublisherTokenAuthorizationValue(String publisherApiToken) {
         return AUTHORIZATION_HEADER_API_TOKEN_PREFIX + publisherApiToken;
+    }
+
+    private String urlEncode(String stringToEncode) throws WayfException {
+        try {
+            return URLEncoder.encode(stringToEncode, "UTF-8");
+        } catch (Exception e) {
+            throw new WayfException("Could not encode string [" + stringToEncode + "]", e);
+        }
     }
 }
